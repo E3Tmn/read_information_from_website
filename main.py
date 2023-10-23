@@ -26,16 +26,27 @@ def download_picture(count, soup):
 def download_book(count, soup, response):
     title_tag = soup.find('head').find('title')
     title_text = title_tag.text.split('- ')
-    name_of_book =f"{sanitize_filename(title_text[0].strip())}.txt" 
+    name_of_book = f"{sanitize_filename(title_text[0].strip())}.txt"
     book_folder = 'books'
     Path(book_folder).mkdir(exist_ok=True)
     with open(os.path.join(book_folder, f'{count}.{name_of_book}'), 'wb') as file:
         file.write(response.content)
 
 
+def download_comments(count, soup):
+    comments_tag = soup.find_all('div', class_='texts')
+    if comments_tag:
+        comment_folder = 'comments'
+        Path(comment_folder).mkdir(exist_ok=True)
+        for comment in comments_tag:
+            comment_text = comment.find('span', class_='black')
+            with open(os.path.join(comment_folder, f'{count}.txt'), 'a', encoding='utf-8') as file:
+                file.write(f'{comment_text.text}\n')
+
+
 def main():
     for count in range(10):
-        book_id = f'3216{count}'
+        book_id = f'{count}'
         payloads = {
             'id': book_id
         }
@@ -49,6 +60,7 @@ def main():
             soup = BeautifulSoup(title_page_response.text, 'lxml')
             download_book(count, soup, book_response)
             download_picture(count, soup)
+            download_comments(count, soup)
         except requests.HTTPError:
             pass
 
