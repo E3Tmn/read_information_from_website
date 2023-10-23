@@ -11,10 +11,9 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def download_picture(count, soup):
-    picture_url = soup.find('div', class_='bookimage').find('a').find('img')['src']
-    ext = os.path.splitext(picture_url)[1]
-    url = urljoin('https://tululu.org', picture_url)
+def download_picture(count, book_cover_url):
+    ext = os.path.splitext(book_cover_url)[1]
+    url = urljoin('https://tululu.org', book_cover_url)
     response = requests.get(url)
     response.raise_for_status()
     image_folder = 'image'
@@ -23,47 +22,60 @@ def download_picture(count, soup):
         file.write(response.content)
 
 
-def download_book(count, soup, book_id):
+def download_book(count, book_title, book_id):
     payloads = {
             'id': book_id
         }
     book_url = f"https://tululu.org/txt.php"
     book_response = requests.get(book_url, params=payloads)
     book_response.raise_for_status()
-    check_for_redirect(book_response)
-    title_tag = soup.find('head').find('title')
-    title_text = title_tag.text.split(' - ')
-    genre_tag = soup.find('span', class_='d_book').find('a')
-    genre = genre_tag['title'].split(' - ')
-    print(genre[0])
-    name_of_book = f"{sanitize_filename(title_text[0])}.txt"
+    name_of_book = f"{book_title}.txt"
     book_folder = 'books'
     Path(book_folder).mkdir(exist_ok=True)
     with open(os.path.join(book_folder, f'{count}.{name_of_book}'), 'wb') as file:
         file.write(book_response.content)
 
 
-def download_comments(count, soup):
-    comments_tag = soup.find_all('div', class_='texts')
-    if comments_tag:
+def download_comments(count, comments):
+    if comments:
         comment_folder = 'comments'
         Path(comment_folder).mkdir(exist_ok=True)
-        for comment in comments_tag:
-            comment_text = comment.find('span', class_='black')
+        for comment in comments:
             with open(os.path.join(comment_folder, f'{count}.txt'), 'a', encoding='utf-8') as file:
-                file.write(f'{comment_text.text}\n')
+                file.write(f'{comment}\n')
+
+
+def parse_book_page(response):
+    soup = BeautifulSoup(response.text, 'lxml')
+    title_tag = soup.find('head').find('title')
+    title_text = title_tag.text.split(' - ')
+    genre_tag = soup.find('span', class_='d_book').find('a')
+    genre = genre_tag['title'].split(' - ')[0]
+    picture_url = soup.find('div', class_='bookimage').find('a').find('img')['src']
+    comments_tag = soup.find_all('div', class_='texts')
+    comments = []
+    for comment in comments_tag:
+        comments.append(comment.find('span', class_='black').text)
+
+    return {'book_title': sanitize_filename(title_text[0]),
+            'book_author': title_text[1].split(',')[0],
+            'book_genre': genre,
+            'book_cover_url': picture_url,
+            'comments_on_book':comments }
+
 
 
 def main():
     for count in range(10):
         book_id = f'{count}'
         try:
-            title_page_url = f'https://tululu.org/b{book_id}/'
-            title_page_response = requests.get(title_page_url)
-            soup = BeautifulSoup(title_page_response.text, 'lxml')
-            download_book(count, soup, book_id)
-            download_picture(count, soup)
-            download_comments(count, soup)
+            url = f'https://tululu.org/b{book_id}/'
+            response = requests.get(url)
+            check_for_redirect(response)
+            information_about_book = parse_book_page(response)
+            download_book(count, information_about_book['book_title'], book_id)
+            download_picture(count, information_about_book['book_cover_url'])
+            download_comments(count, information_about_book['comments_on_book'])
         except requests.HTTPError:
             pass
 
