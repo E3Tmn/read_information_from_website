@@ -23,14 +23,21 @@ def download_picture(count, soup):
         file.write(response.content)
 
 
-def download_book(count, soup, response):
+def download_book(count, soup, book_id):
+    payloads = {
+            'id': book_id
+        }
+    book_url = f"https://tululu.org/txt.php"
+    book_response = requests.get(book_url, params=payloads)
+    book_response.raise_for_status()
+    check_for_redirect(book_response)
     title_tag = soup.find('head').find('title')
     title_text = title_tag.text.split('- ')
     name_of_book = f"{sanitize_filename(title_text[0].strip())}.txt"
     book_folder = 'books'
     Path(book_folder).mkdir(exist_ok=True)
     with open(os.path.join(book_folder, f'{count}.{name_of_book}'), 'wb') as file:
-        file.write(response.content)
+        file.write(book_response.content)
 
 
 def download_comments(count, soup):
@@ -47,18 +54,11 @@ def download_comments(count, soup):
 def main():
     for count in range(10):
         book_id = f'{count}'
-        payloads = {
-            'id': book_id
-        }
-        book_url = f"https://tululu.org/txt.php"
         try:
-            book_response = requests.get(book_url, params=payloads)
-            book_response.raise_for_status()
-            check_for_redirect(book_response)
             title_page_url = f'https://tululu.org/b{book_id}/'
             title_page_response = requests.get(title_page_url)
             soup = BeautifulSoup(title_page_response.text, 'lxml')
-            download_book(count, soup, book_response)
+            download_book(count, soup, book_id)
             download_picture(count, soup)
             download_comments(count, soup)
         except requests.HTTPError:
