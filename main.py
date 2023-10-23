@@ -1,6 +1,8 @@
 import requests
 from pathlib import Path
 from bs4 import BeautifulSoup
+import os
+from pathvalidate import sanitize_filename
 
 
 def check_for_redirect(response):
@@ -13,9 +15,9 @@ def get_title_of_book(book_id):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'lxml')
     title_tag = soup.find('head').find('title')
-    title_text = title_tag.text.split('-')
+    title_text = title_tag.text.split('- ')
     name_of_book = title_text[0].strip()
-    return name_of_book
+    return f"{sanitize_filename(name_of_book)}.txt"
 
 
 def main():
@@ -30,8 +32,9 @@ def main():
             response.raise_for_status()
             check_for_redirect(response)
             filename = get_title_of_book(book_id)
-            Path('books').mkdir(exist_ok=True)
-            with open(f'books/{filename}', 'wb') as file:
+            folder='books'
+            Path(folder).mkdir(exist_ok=True)
+            with open(os.path.join(folder,f'{count}.{filename}'), 'wb') as file:
                 file.write(response.content)
         except requests.HTTPError:
             print(requests.HTTPError)
