@@ -6,6 +6,7 @@ from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 import argparse
 
+
 def check_for_redirect(response):
     if response.history:
         raise requests.HTTPError
@@ -61,8 +62,7 @@ def parse_book_page(response):
             'book_author': title_text[1].split(',')[0],
             'book_genre': genre,
             'book_cover_url': picture_url,
-            'comments_on_book':comments }
-
+            'comments_on_book': comments}
 
 
 def main():
