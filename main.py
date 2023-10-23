@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import os
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
-
+import argparse
 
 def check_for_redirect(response):
     if response.history:
@@ -66,7 +66,13 @@ def parse_book_page(response):
 
 
 def main():
-    for count in range(10):
+    parser = argparse.ArgumentParser(description='Выбираем с какого по какой ID скачивать книги')
+    parser.add_argument('--start_id', type=int, help='ID первой книги')
+    parser.add_argument('--end_id', type=int, help='ID второй книги')
+    args = parser.parse_args()
+    start_id = args.start_id if args.start_id else 0
+    end_id = args.end_id if args.end_id else 0
+    for count in range(start_id, end_id):
         book_id = f'{count}'
         try:
             url = f'https://tululu.org/b{book_id}/'
