@@ -3,7 +3,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 import os
 from pathvalidate import sanitize_filename
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 
 
 def check_for_redirect(response):
@@ -32,8 +32,11 @@ def download_book(count, soup, book_id):
     book_response.raise_for_status()
     check_for_redirect(book_response)
     title_tag = soup.find('head').find('title')
-    title_text = title_tag.text.split('- ')
-    name_of_book = f"{sanitize_filename(title_text[0].strip())}.txt"
+    title_text = title_tag.text.split(' - ')
+    genre_tag = soup.find('span', class_='d_book').find('a')
+    genre = genre_tag['title'].split(' - ')
+    print(genre[0])
+    name_of_book = f"{sanitize_filename(title_text[0])}.txt"
     book_folder = 'books'
     Path(book_folder).mkdir(exist_ok=True)
     with open(os.path.join(book_folder, f'{count}.{name_of_book}'), 'wb') as file:
