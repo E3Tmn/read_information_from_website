@@ -26,7 +26,7 @@ def download_picture(count, soup):
 def download_book(count, soup, response):
     title_tag = soup.find('head').find('title')
     title_text = title_tag.text.split('- ')
-    name_of_book = title_text[0].strip()
+    name_of_book =f"{sanitize_filename(title_text[0].strip())}.txt" 
     book_folder = 'books'
     Path(book_folder).mkdir(exist_ok=True)
     with open(os.path.join(book_folder, f'{count}.{name_of_book}'), 'wb') as file:
