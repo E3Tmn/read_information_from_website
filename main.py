@@ -68,11 +68,11 @@ def parse_book_page(response):
 def main():
     parser = argparse.ArgumentParser(description='''Программа позволяет скачать книги, их обложки и комментарии с сайта https://tululu.org/. 
                                      Для начала работы желательно выбрать с какого(start_id) по какой(end_id) ID скачивать книги''')
-    parser.add_argument('--start_id', type=int, help='ID первой книги')
-    parser.add_argument('--end_id', type=int, help='ID второй книги')
+    parser.add_argument('--start_id', type=int, default=10, help='ID первой книги')
+    parser.add_argument('--end_id', type=int, default=25, help='ID второй книги')
     args = parser.parse_args()
-    start_id = args.start_id if args.start_id else 0
-    end_id = args.end_id if args.end_id else 0
+    start_id = args.start_id
+    end_id = args.end_id
     for count in range(start_id, end_id):
         book_id = f'{count}'
         try:
