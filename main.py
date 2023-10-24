@@ -84,8 +84,10 @@ def main():
             download_book(count, information_about_book['book_title'], book_id)
             download_picture(count, information_about_book['book_cover_url'])
             download_comments(count, information_about_book['comments_on_book'])
-        except requests.HTTPError as error:
-            print(f'HTTP error occurred {error}')
+        except requests.HTTPError:
+            print('HTTP error occurred')
+        except requests.ConnectionError:
+            print('Connection is interrupted')
 
 
 if __name__ == "__main__":
