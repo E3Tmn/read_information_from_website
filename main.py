@@ -31,6 +31,7 @@ def download_book(count, book_title, book_id):
     book_url = f"https://tululu.org/txt.php"
     book_response = requests.get(book_url, params=payloads)
     book_response.raise_for_status()
+    check_for_redirect(book_response)
     name_of_book = f"{book_title}.txt"
     book_folder = 'books'
     Path(book_folder).mkdir(exist_ok=True)
@@ -55,10 +56,7 @@ def parse_book_page(response):
     genre = genre_tag['title'].split(' - ')[0]
     picture_url = soup.find('div', class_='bookimage').find('a').find('img')['src']
     comments_tag = soup.find_all('div', class_='texts')
-    comments = []
-    for comment in comments_tag:
-        comments.append(comment.find('span', class_='black').text)
-
+    comments = [comment.find('span', class_='black').text for comment in comments_tag]
     return {'book_title': sanitize_filename(title_text[0]),
             'book_author': title_text[1].split(',')[0],
             'book_genre': genre,
