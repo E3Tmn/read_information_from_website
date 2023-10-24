@@ -15,7 +15,7 @@ def check_for_redirect(response):
 
 def download_picture(count, book_cover_url):
     ext = os.path.splitext(book_cover_url)[1]
-    url = urljoin('https://tululu.org', book_cover_url)
+    url = urljoin(f'https://tululu.org/b{count}/', book_cover_url)
     response = requests.get(url)
     response.raise_for_status()
     image_folder = 'image'
@@ -40,12 +40,11 @@ def download_book(count, book_title, book_id):
 
 
 def download_comments(count, comments):
-    if comments:
-        comment_folder = 'comments'
-        Path(comment_folder).mkdir(exist_ok=True)
-        for comment in comments:
-            with open(os.path.join(comment_folder, f'{count}.txt'), 'a', encoding='utf-8') as file:
-                file.write(f'{comment}\n')
+    comment_folder = 'comments'
+    Path(comment_folder).mkdir(exist_ok=True)
+    for comment in comments:
+        with open(os.path.join(comment_folder, f'{count}.txt'), 'a', encoding='utf-8') as file:
+            file.write(f'{comment}\n')
 
 
 def parse_book_page(response):
@@ -65,7 +64,7 @@ def parse_book_page(response):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='''Программа позволяет скачать книги, их обложки и комментарии с сайта https://tululu.org/. 
+    parser = argparse.ArgumentParser(description='''Программа позволяет скачать книги, их обложки и комментарии с сайта https://tululu.org/.
                                      Для начала работы желательно выбрать с какого(start_id) по какой(end_id) ID скачивать книги''')
     parser.add_argument('--start_id', type=int, default=10, help='ID первой книги')
     parser.add_argument('--end_id', type=int, default=25, help='ID второй книги')
@@ -82,7 +81,8 @@ def main():
             book = parse_book_page(response)
             download_book(count, book['book_title'], book_id)
             download_picture(count, book['book_cover_url'])
-            download_comments(count, book['comments_on_book'])
+            if book['comments_on_book']:
+                download_comments(count, book['comments_on_book'])
         except requests.HTTPError:
             print('HTTP error occurred')
         except requests.ConnectionError:
