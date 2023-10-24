@@ -79,11 +79,12 @@ def main():
         try:
             url = f'https://tululu.org/b{book_id}/'
             response = requests.get(url)
+            response.raise_for_status()
             check_for_redirect(response)
-            information_about_book = parse_book_page(response)
-            download_book(count, information_about_book['book_title'], book_id)
-            download_picture(count, information_about_book['book_cover_url'])
-            download_comments(count, information_about_book['comments_on_book'])
+            book = parse_book_page(response)
+            download_book(count, book['book_title'], book_id)
+            download_picture(count, book['book_cover_url'])
+            download_comments(count, book['comments_on_book'])
         except requests.HTTPError:
             print('HTTP error occurred')
         except requests.ConnectionError:
