@@ -5,6 +5,7 @@ import os
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 import argparse
+import sys
 
 
 def check_for_redirect(response):
@@ -74,7 +75,7 @@ def main():
     start_id = args.start_id
     end_id = args.end_id
     for count in range(start_id, end_id):
-        book_id = f'{count}'
+        book_id = count
         try:
             url = f'https://tululu.org/b{book_id}/'
             response = requests.get(url)
@@ -83,8 +84,8 @@ def main():
             download_book(count, information_about_book['book_title'], book_id)
             download_picture(count, information_about_book['book_cover_url'])
             download_comments(count, information_about_book['comments_on_book'])
-        except requests.HTTPError:
-            pass
+        except requests.HTTPError as error:
+            print(f'HTTP error occurred {error}')
 
 
 if __name__ == "__main__":
