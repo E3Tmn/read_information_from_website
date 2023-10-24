@@ -66,7 +66,8 @@ def parse_book_page(response):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Выбираем с какого по какой ID скачивать книги')
+    parser = argparse.ArgumentParser(description='''Программа позволяет скачать книги, их обложки и комментарии с сайта https://tululu.org/. 
+                                     Для начала работы желательно выбрать с какого(start_id) по какой(end_id) ID скачивать книги''')
     parser.add_argument('--start_id', type=int, help='ID первой книги')
     parser.add_argument('--end_id', type=int, help='ID второй книги')
     args = parser.parse_args()
