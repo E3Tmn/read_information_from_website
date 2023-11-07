@@ -43,7 +43,7 @@ def download_comments(count, comments):
     comment_folder = 'comments'
     Path(comment_folder).mkdir(exist_ok=True)
     with open(os.path.join(comment_folder, f'{count}.txt'), 'a', encoding='utf-8') as file:
-        for comment in comments:        
+        for comment in comments:
             file.write(f'{comment}\n')
 
 
